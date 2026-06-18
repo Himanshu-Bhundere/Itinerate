@@ -10,7 +10,7 @@ type SignupStep = 'email' | 'otp' | 'password';
 export default function LoginScreen() {
   const [mode, setMode] = useState<AuthMode>('login');
   const [signupStep, setSignupStep] = useState<SignupStep>('email');
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
@@ -120,15 +120,15 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      
+
       <ImageBackground source={{ uri: BG_IMAGE }} style={styles.backgroundImage}>
         <View style={styles.overlay}>
-          
+
           <View style={styles.headerContainer}>
             <Text style={styles.logoText}>Itinerate</Text>
             <Text style={styles.tagline}>Discover your next great adventure.</Text>
