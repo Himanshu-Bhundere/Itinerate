@@ -1,116 +1,311 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, ImageBackground, Image } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/useAuthStore';
-import { useRouter, useFocusEffect } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - 60) / 2; // 2 columns with padding
+const PLAN_IMAGE = 'https://images.unsplash.com/photo-1596743343697-39b1cbcf7723?q=80&w=1000';
 
 export default function SavedScreen() {
-  const [bookmarks, setBookmarks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const session = useAuthStore(state => state.session);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [activeTab, setActiveTab] = useState('Plans');
+  const [plans, setPlans] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (session?.user?.id) {
-        fetchBookmarks();
-      } else {
-        setBookmarks([]);
-        setLoading(false);
-      }
-    }, [session])
-  );
+  const session = useAuthStore(state => state.session);
 
-  async function fetchBookmarks() {
-    setLoading(true);
+  React.useEffect(() => {
+    fetchPlans();
+  }, [session]);
+
+  async function fetchPlans() {
+    if (!session?.user?.id) return;
     const { data, error } = await supabase
-      .from('bookmarks')
-      .select('*, plans(*, profiles(display_name))')
-      .eq('user_id', session!.user.id)
+      .from('saved_plans')
+      .select('*, plans(*)')
+      .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
-
+      
     if (!error && data) {
-      setBookmarks(data);
+      setPlans(data.map(d => d.plans).filter(Boolean));
     }
     setLoading(false);
   }
 
-  async function removeBookmark(bookmarkId: string) {
-    const { error } = await supabase
-      .from('bookmarks')
-      .delete()
-      .eq('id', bookmarkId);
-      
-    if (error) {
-      Alert.alert('Error', 'Could not remove bookmark');
-    } else {
-      setBookmarks(prev => prev.filter(b => b.id !== bookmarkId));
-    }
-  }
+  const mainTabs = [
+    { id: 'Plans', icon: 'bookmark' },
+    { id: 'Places', icon: 'location-outline' },
+    { id: 'Collections', icon: 'layers-outline' },
+    { id: 'Downloads', icon: 'download-outline' }
+  ];
 
-  const renderItem = ({ item }: { item: any }) => {
-    const plan = item.plans;
-    if (!plan) return null;
+  const filterPills = [
+    { id: 'All Saved', count: 42, active: true },
+    { id: 'Dreaming', count: 18, active: false, icon: 'cloud-outline' },
+    { id: 'Planning', count: 16, active: false, icon: 'calendar-outline' },
+    { id: 'Booked', count: 8, active: false, icon: 'checkmark-circle-outline' },
+  ];
 
-    return (
-      <View className="bg-white rounded-2xl mb-4 border border-slate-100 shadow-sm overflow-hidden">
-        <TouchableOpacity 
-          className="p-4 flex-row items-center"
-          onPress={() => router.push(`/plans/${plan.id}`)}
-        >
-          <View className="flex-1">
-            <Text className="text-lg font-bold text-slate-800 mb-1">{plan.title}</Text>
-            <Text className="text-sm font-semibold text-blue-600 mb-1">{plan.location}</Text>
-            <Text className="text-sm text-slate-500">By {plan.profiles?.display_name || 'Traveler'} • {plan.duration_days} Days</Text>
+  const collections = [
+    { title: 'Goa Wishlist', items: 12 },
+    { title: 'Maharashtra Treks', items: 18 },
+    { title: 'Bucket List', items: 24 },
+    { title: 'Weekend Getaway', items: 8 },
+  ];
+
+  const CollectionCard = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.collectionCard}>
+      <ImageBackground source={{ uri: PLAN_IMAGE }} style={styles.collectionImg} imageStyle={{ borderRadius: 16 }}>
+        <View style={styles.collectionOverlay} />
+        <View style={styles.collectionTop}><Ionicons name="ellipsis-horizontal" size={20} color="#fff" /></View>
+        <View style={styles.collectionBottom}>
+          <View>
+            <Text style={styles.collectionTitle} numberOfLines={1}>{item.title}</Text>
+            <Text style={styles.collectionItems}>{item.items} items</Text>
           </View>
-          <View className="flex-col items-end">
-            <View className="bg-slate-50 px-3 py-1 rounded-full mb-3 border border-slate-200">
-              <Text className="text-xs font-bold text-slate-600 capitalize">{item.intent}</Text>
-            </View>
-            <TouchableOpacity 
-              onPress={() => removeBookmark(item.id)}
-              className="p-2 -mr-2 -mb-2"
-            >
-              <Ionicons name="trash-outline" size={20} color="#ef4444" />
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
+          <View style={styles.collectionBookmark}><Ionicons name="bookmark" size={16} color="#0f172a" /></View>
+        </View>
+      </ImageBackground>
+    </TouchableOpacity>
+  );
+
+  const RecentSaveItem = ({ title, col, time }: any) => (
+    <TouchableOpacity style={styles.recentItem}>
+      <Image source={{ uri: PLAN_IMAGE }} style={styles.recentImg} />
+      <View style={styles.recentInfo}>
+        <Text style={styles.recentTitle} numberOfLines={1}>{title}</Text>
+        <Text style={styles.recentSavedTo}>Saved to</Text>
+        <View style={styles.recentColRow}>
+          <Ionicons name="folder-outline" size={12} color="#2563eb" />
+          <Text style={styles.recentColText}>{col}</Text>
+        </View>
+        <Text style={styles.recentTime}>{time}</Text>
       </View>
-    );
-  };
+    </TouchableOpacity>
+  );
+
+  const PlanCard = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.planCard} onPress={() => router.push(`/plans/${item.id}`)}>
+      <ImageBackground source={{ uri: item.image_url || PLAN_IMAGE }} style={styles.planImg} imageStyle={{ borderTopLeftRadius: 16, borderTopRightRadius: 16 }}>
+        <View style={styles.planOverlay} />
+        <View style={styles.planTopRow}>
+          <View style={styles.planTag}><Text style={styles.planTagText}>TREKKING</Text></View>
+          <View style={styles.planBookmark}><Ionicons name="bookmark" size={18} color="#0f172a" /></View>
+        </View>
+        <View style={styles.planColBadgeRow}>
+          <View style={styles.planColBadge}>
+            <Ionicons name="folder" size={12} color="#8b5cf6" style={{ marginRight: 4 }} />
+            <Text style={styles.planColBadgeText}>Maharashtra Treks</Text>
+          </View>
+        </View>
+      </ImageBackground>
+      <View style={styles.planContent}>
+        <View style={styles.planHeaderRow}>
+          <Text style={styles.planTitle} numberOfLines={1}>{item.title || '(Image of trek)'}</Text>
+          <Ionicons name="ellipsis-vertical" size={18} color="#64748b" />
+        </View>
+        <View style={styles.planMetaRow}>
+          <Ionicons name="calendar-outline" size={12} color="#64748b" />
+          <Text style={styles.planMetaText}>{item.duration_days || 4} Days</Text>
+          <Ionicons name="person-outline" size={12} color="#64748b" style={{ marginLeft: 8 }} />
+          <Text style={styles.planMetaText} numberOfLines={1}>{item.location || 'Uttarakhand'}</Text>
+        </View>
+        <View style={styles.planBottomRow}>
+          <View style={styles.planRatingRow}>
+            <Ionicons name="star" size={12} color="#f59e0b" />
+            <Text style={styles.planRatingText}>4.9 (1.2K)</Text>
+          </View>
+          <Text style={styles.planPrice}>₹7,500 per person</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="px-4 pt-12 pb-4 bg-white border-b border-slate-100">
-        <Text className="text-3xl font-bold text-slate-800">Saved Plans</Text>
-        <Text className="text-slate-500 mt-1">Your curated list of adventures</Text>
-      </View>
-
-      {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#2563eb" />
+    <View style={styles.container}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: Math.max(insets.top, 20), paddingBottom: 140 }}
+      >
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>Saved</Text>
+            <Text style={styles.headerSub}>All your saved trips, places and collections</Text>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.headerIconBtn}><Ionicons name="search" size={20} color="#0f172a" /></TouchableOpacity>
+            <TouchableOpacity style={styles.headerIconBtn}><Ionicons name="options-outline" size={20} color="#0f172a" /></TouchableOpacity>
+          </View>
         </View>
-      ) : (
-        <FlatList
-          data={bookmarks}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={{ padding: 16 }}
-          ListEmptyComponent={
-            <View className="mt-20 items-center">
-              <Text className="text-slate-500 text-center text-lg font-medium">You haven't saved any plans yet.</Text>
-              <Text className="text-slate-400 text-center mt-2">Go to Discover to find inspiration!</Text>
-              <TouchableOpacity 
-                className="mt-6 bg-blue-600 px-6 py-3 rounded-full"
-                onPress={() => router.push('/(tabs)/')}
-              >
-                <Text className="text-white font-bold text-base">Explore Plans</Text>
-              </TouchableOpacity>
-            </View>
-          }
-        />
-      )}
+
+        {/* Main Tabs */}
+        <View style={styles.mainTabs}>
+          {mainTabs.map(tab => (
+            <TouchableOpacity key={tab.id} style={[styles.mainTab, activeTab === tab.id && styles.mainTabActive]} onPress={() => setActiveTab(tab.id)}>
+              <Ionicons name={tab.icon as any} size={16} color={activeTab === tab.id ? '#2563eb' : '#64748b'} />
+              <Text style={[styles.mainTabText, activeTab === tab.id && styles.mainTabTextActive]}>{tab.id}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Filter Pills */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, marginBottom: 24 }}>
+          {filterPills.map(pill => (
+            <TouchableOpacity key={pill.id} style={[styles.filterPill, pill.active && styles.filterPillActive]}>
+              {pill.icon && <Ionicons name={pill.icon as any} size={14} color="#64748b" style={{ marginRight: 6 }} />}
+              <Text style={[styles.filterPillText, pill.active && styles.filterPillTextActive]}>{pill.id}</Text>
+              <View style={[styles.filterCountBadge, pill.active && { backgroundColor: '#bfdbfe' }]}>
+                <Text style={[styles.filterCountText, pill.active && { color: '#2563eb' }]}>{pill.count}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* My Collections */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>My Collections</Text>
+          <TouchableOpacity><Text style={styles.viewAllText}>View all ></Text></TouchableOpacity>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
+          {collections.map((col, idx) => <CollectionCard key={idx} item={col} />)}
+        </ScrollView>
+
+        {/* Organize Banner */}
+        <View style={styles.organizeBanner}>
+          <Ionicons name="sparkles-outline" size={24} color="#2563eb" />
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={styles.organizeTitle}>Organize better, travel smarter</Text>
+            <Text style={styles.organizeSub}>Create collections to keep your saved plans organized</Text>
+          </View>
+          <TouchableOpacity style={styles.newColBtn}>
+            <Ionicons name="add" size={16} color="#2563eb" />
+            <Text style={styles.newColBtnText}>New Collection</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Recently Saved */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recently Saved</Text>
+          <TouchableOpacity><Text style={styles.viewAllText}>View all ></Text></TouchableOpacity>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
+          <RecentSaveItem title="Kedarkantha Trek" col="Maharashtra Treks" time="2h ago" />
+          <RecentSaveItem title="Andaman Escape" col="Goa Wishlist" time="5h ago" />
+          <RecentSaveItem title="Spiti Valley Road Trip" col="Bucket List" time="1d ago" />
+        </ScrollView>
+
+        {/* Saved Plans List */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Saved Plans</Text>
+          <TouchableOpacity><Text style={styles.viewAllText}>Select</Text></TouchableOpacity>
+        </View>
+        <View style={styles.plansGrid}>
+          {plans.map((p, idx) => <PlanCard key={idx} item={p} />)}
+          {plans.length === 0 && <PlanCard item={{ title: 'Kedarkantha Trek' }} />}
+          {plans.length === 0 && <PlanCard item={{ title: 'Andaman Escape' }} />}
+        </View>
+
+      </ScrollView>
+
+      {/* Floating Bottom Action Bar */}
+      <View style={styles.bottomActionBar}>
+        <TouchableOpacity style={styles.actionBtn}>
+          <Ionicons name="folder-outline" size={20} color="#2563eb" />
+          <Text style={[styles.actionBtnText, { color: '#2563eb' }]}>Move to Collection</Text>
+        </TouchableOpacity>
+        <View style={styles.actionDivider} />
+        <TouchableOpacity style={styles.actionBtn}>
+          <Ionicons name="download-outline" size={20} color="#10b981" />
+          <Text style={[styles.actionBtnText, { color: '#10b981' }]}>Download</Text>
+        </TouchableOpacity>
+        <View style={styles.actionDivider} />
+        <TouchableOpacity style={styles.actionBtn}>
+          <Ionicons name="archive-outline" size={20} color="#f59e0b" />
+          <Text style={[styles.actionBtnText, { color: '#f59e0b' }]}>Archive</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f8fafc' },
+  
+  header: { flexDirection: 'row', paddingHorizontal: 20, marginBottom: 20 },
+  headerTitle: { fontSize: 32, fontWeight: '800', color: '#0f172a' },
+  headerSub: { fontSize: 13, color: '#64748b', marginTop: 4 },
+  headerActions: { flexDirection: 'row', alignItems: 'flex-start' },
+  headerIconBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', marginLeft: 12, borderWidth: 1, borderColor: '#e2e8f0' },
+
+  mainTabs: { flexDirection: 'row', marginHorizontal: 20, backgroundColor: '#fff', borderRadius: 12, padding: 4, borderWidth: 1, borderColor: '#e2e8f0', marginBottom: 20 },
+  mainTab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 8 },
+  mainTabActive: { backgroundColor: '#f8fafc', borderBottomWidth: 2, borderBottomColor: '#2563eb' },
+  mainTabText: { fontSize: 13, fontWeight: '600', color: '#64748b', marginLeft: 6 },
+  mainTabTextActive: { color: '#2563eb' },
+
+  filterPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', paddingLeft: 16, paddingRight: 8, paddingVertical: 8, borderRadius: 24, borderWidth: 1, borderColor: '#e2e8f0', marginRight: 12 },
+  filterPillActive: { borderColor: '#bfdbfe', backgroundColor: '#eff6ff' },
+  filterPillText: { fontSize: 13, fontWeight: '600', color: '#334155', marginRight: 8 },
+  filterPillTextActive: { color: '#2563eb' },
+  filterCountBadge: { backgroundColor: '#f1f5f9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  filterCountText: { fontSize: 11, fontWeight: '700', color: '#64748b' },
+
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingHorizontal: 20, marginBottom: 16, marginTop: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
+  viewAllText: { fontSize: 13, fontWeight: '600', color: '#2563eb' },
+
+  collectionCard: { width: 140, height: 160, marginRight: 16 },
+  collectionImg: { width: '100%', height: '100%', justifyContent: 'space-between', padding: 12 },
+  collectionOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 16 },
+  collectionTop: { alignItems: 'flex-end' },
+  collectionBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  collectionTitle: { color: '#fff', fontSize: 14, fontWeight: '700', marginBottom: 2 },
+  collectionItems: { color: '#e2e8f0', fontSize: 11 },
+  collectionBookmark: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' },
+
+  organizeBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f8fafc', marginHorizontal: 20, marginTop: 24, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#e2e8f0' },
+  organizeTitle: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
+  organizeSub: { fontSize: 11, color: '#64748b', marginTop: 2 },
+  newColBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, borderWidth: 1, borderColor: '#bfdbfe' },
+  newColBtnText: { fontSize: 12, fontWeight: '600', color: '#2563eb', marginLeft: 4 },
+
+  recentItem: { flexDirection: 'row', alignItems: 'center', width: 220, padding: 8, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e2e8f0', marginRight: 16 },
+  recentImg: { width: 64, height: 64, borderRadius: 12 },
+  recentInfo: { flex: 1, marginLeft: 12 },
+  recentTitle: { fontSize: 13, fontWeight: '700', color: '#0f172a', marginBottom: 2 },
+  recentSavedTo: { fontSize: 10, color: '#64748b' },
+  recentColRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+  recentColText: { fontSize: 11, fontWeight: '600', color: '#2563eb', marginLeft: 4 },
+  recentTime: { fontSize: 10, color: '#94a3b8', marginTop: 4 },
+
+  plansGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, justifyContent: 'space-between' },
+  planCard: { width: CARD_WIDTH, backgroundColor: '#fff', borderRadius: 16, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  planImg: { width: '100%', height: 120, justifyContent: 'space-between' },
+  planOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.2)', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
+  planTopRow: { flexDirection: 'row', justifyContent: 'space-between', padding: 8 },
+  planTag: { backgroundColor: '#10b981', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  planTagText: { color: '#fff', fontSize: 9, fontWeight: '800' },
+  planBookmark: { width: 32, height: 32, backgroundColor: '#fff', borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  planColBadgeRow: { padding: 8 },
+  planColBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.9)', alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  planColBadgeText: { fontSize: 10, fontWeight: '600', color: '#475569' },
+  planContent: { padding: 12 },
+  planHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  planTitle: { flex: 1, fontSize: 14, fontWeight: '700', color: '#0f172a', marginRight: 4 },
+  planMetaRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  planMetaText: { fontSize: 11, color: '#64748b', marginLeft: 4 },
+  planBottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap' },
+  planRatingRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  planRatingText: { fontSize: 11, fontWeight: '600', color: '#475569', marginLeft: 4 },
+  planPrice: { fontSize: 12, fontWeight: '700', color: '#0f172a', width: '100%' },
+
+  bottomActionBar: { position: 'absolute', bottom: 20, left: 20, right: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', backgroundColor: '#fff', height: 64, borderRadius: 32, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8, borderWidth: 1, borderColor: '#e2e8f0' },
+  actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  actionBtnText: { fontSize: 12, fontWeight: '600', marginLeft: 6 },
+  actionDivider: { width: 1, height: 24, backgroundColor: '#e2e8f0' },
+});

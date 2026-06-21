@@ -1,8 +1,11 @@
 import { Tabs } from 'expo-router';
 import { Platform, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+  
   return (
     <Tabs
       screenOptions={{
@@ -13,9 +16,9 @@ export default function TabLayout() {
           elevation: 10,
           borderTopWidth: 0,
           backgroundColor: '#ffffff',
-          height: Platform.OS === 'ios' ? 88 : 60,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 8,
-          paddingTop: 8,
+          minHeight: Platform.OS === 'android' ? 70 : 80,
+          paddingBottom: Platform.OS === 'android' ? Math.max(insets.bottom, 12) : insets.bottom,
+          paddingTop: 12,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
@@ -24,7 +27,7 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
-          marginTop: 2,
+          marginTop: 4,
         }
       }}>
       <Tabs.Screen
@@ -35,9 +38,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="explore"
         options={{
-          title: 'Search',
+          title: 'Explore',
           tabBarIcon: ({ color, size }) => <Ionicons name="search" size={size} color={color} />,
         }}
       />
@@ -45,19 +48,22 @@ export default function TabLayout() {
         name="create"
         options={{
           title: 'Create',
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ focused }) => (
             <View style={{
-              backgroundColor: '#2563eb',
-              borderRadius: 20,
-              padding: 6,
-              marginTop: -10,
+              backgroundColor: focused ? '#2563eb' : '#3b82f6',
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: -15,
               shadowColor: '#2563eb',
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 4,
               elevation: 4
             }}>
-              <Ionicons name="add" size={size + 4} color="#ffffff" />
+              <Ionicons name="add" size={28} color="#ffffff" />
             </View>
           ),
         }}
@@ -70,7 +76,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="settings"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
