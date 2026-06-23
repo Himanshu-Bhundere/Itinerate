@@ -1,40 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, ImageBackground, KeyboardAvoidingView, Platform, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, ImageBackground, KeyboardAvoidingView, Platform, StyleSheet, StatusBar, Image } from 'react-native';
 import { supabase } from '../../lib/supabase';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const BG_IMAGE = 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop';
+const GOOGLE_ICON = 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg';
 
-type AuthMode = 'login' | 'signup';
-type SignupStep = 'email' | 'otp' | 'password';
+type AuthMode = 'login' | 'otp';
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const [mode, setMode] = useState<AuthMode>('login');
-  const [signupStep, setSignupStep] = useState<SignupStep>('email');
-
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // --- LOG IN FLOW ---
-  async function handleLogin() {
-    if (!email || !password) {
-      Alert.alert('Required Fields', 'Please enter both email and password.');
-      return;
-    }
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-
-    if (error) {
-      Alert.alert('Login Error', error.message);
-    }
-    setLoading(false);
-  }
-
-  // --- SIGN UP FLOW ---
   async function handleSendOtp() {
     if (!email) {
       Alert.alert('Email Required', 'Please enter a valid email address.');
@@ -52,7 +33,7 @@ export default function LoginScreen() {
         Alert.alert('Error', error.message);
       }
     } else {
-      setSignupStep('otp');
+      setMode('otp');
     }
     setLoading(false);
   }
@@ -71,52 +52,9 @@ export default function LoginScreen() {
 
     if (error) {
       Alert.alert('Verification Failed', 'Invalid or expired code. Please try again.');
-    } else {
-      // User is now authenticated, move to password setup
-      setSignupStep('password');
     }
+    // Success will be caught by _layout.tsx
     setLoading(false);
-  }
-
-  async function handleSetPassword() {
-    if (!password || password.length < 6) {
-      Alert.alert('Invalid Password', 'Password must be at least 6 characters long.');
-      return;
-    }
-    setLoading(true);
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
-
-    if (error) {
-      Alert.alert('Error', error.message);
-    } else {
-      Alert.alert('Success', 'Your account is ready!');
-      // State changes here will be caught by the _layout.tsx auth listener to redirect
-    }
-    setLoading(false);
-  }
-
-  // --- RENDER HELPERS ---
-  function getTitle() {
-    if (mode === 'login') return 'Welcome Back';
-    if (signupStep === 'email') return 'Create Account';
-    if (signupStep === 'otp') return 'Check your Email';
-    return 'Secure Account';
-  }
-
-  function getSubtitle() {
-    if (mode === 'login') return 'Log in to continue your journey';
-    if (signupStep === 'email') return 'Enter your email to get started';
-    if (signupStep === 'otp') return `We sent a 6-digit code to ${email}`;
-    return 'Set a password for future logins';
-  }
-
-  function resetState() {
-    setMode(mode === 'login' ? 'signup' : 'login');
-    setSignupStep('email');
-    setPassword('');
-    setOtp('');
   }
 
   return (
@@ -128,113 +66,128 @@ export default function LoginScreen() {
 
       <ImageBackground source={{ uri: BG_IMAGE }} style={styles.backgroundImage}>
         <View style={styles.overlay}>
-
-          <View style={styles.headerContainer}>
-            <Text style={styles.logoText}>Itinerate</Text>
-            <Text style={styles.tagline}>Discover your next great adventure.</Text>
+          {/* Top Logo */}
+          <View style={[styles.headerContainer, { marginTop: Math.max(insets.top, 40) }]}>
+            <View style={styles.logoRow}>
+              <View style={styles.logoIconPlaceholder}>
+                <Ionicons name="location" size={20} color="#fff" />
+              </View>
+              <Text style={styles.logoText}>Itinerate</Text>
+            </View>
           </View>
 
+          {/* Bottom Card */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>{getTitle()}</Text>
-            <Text style={styles.cardSubtitle}>{getSubtitle()}</Text>
+            {/* Floating Logo */}
+            <View style={styles.floatingLogoContainer}>
+              <View style={styles.floatingLogo}>
+                <Ionicons name="location" size={28} color="#0080ff" />
+              </View>
+            </View>
 
-            {/* LOGIN MODE */}
-            {mode === 'login' && (
-              <>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Email address"
-                    placeholderTextColor="#94a3b8"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                  />
-                </View>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    placeholderTextColor="#94a3b8"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                  />
-                </View>
-                <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Log In</Text>}
-                </TouchableOpacity>
-              </>
-            )}
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>{mode === 'login' ? 'Welcome Back' : 'Check your Email'}</Text>
+              <Text style={styles.cardSubtitle}>
+                {mode === 'login' ? 'Sign in to continue your journey' : `We sent a 6-digit code to ${email}`}
+              </Text>
 
-            {/* SIGNUP MODE */}
-            {mode === 'signup' && signupStep === 'email' && (
-              <>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Email address"
-                    placeholderTextColor="#94a3b8"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                  />
-                </View>
-                <TouchableOpacity style={styles.button} onPress={handleSendOtp} disabled={loading}>
-                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Send Code</Text>}
-                </TouchableOpacity>
-              </>
-            )}
+              {mode === 'login' ? (
+                <>
+                  {/* Email Input */}
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.inputLabel}>Email Address</Text>
+                    <View style={styles.inputContainer}>
+                      <Ionicons name="mail-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Enter your email address"
+                        placeholderTextColor="#94a3b8"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                      />
+                    </View>
+                  </View>
 
-            {mode === 'signup' && signupStep === 'otp' && (
-              <>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="6-digit code"
-                    placeholderTextColor="#94a3b8"
-                    value={otp}
-                    onChangeText={setOtp}
-                    keyboardType="number-pad"
-                    maxLength={6}
-                  />
-                </View>
-                <TouchableOpacity style={styles.button} onPress={handleVerifyOtp} disabled={loading}>
-                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Verify Code</Text>}
-                </TouchableOpacity>
-              </>
-            )}
+                  {/* Send OTP Button */}
+                  <TouchableOpacity onPress={handleSendOtp} disabled={loading} activeOpacity={0.8}>
+                    <View style={[styles.button, { backgroundColor: '#2563eb' }]}>
+                      {loading ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : (
+                        <>
+                          <Text style={styles.buttonText}>Send OTP</Text>
+                          <Ionicons name="arrow-forward" size={20} color="#fff" style={styles.buttonIcon} />
+                        </>
+                      )}
+                    </View>
+                  </TouchableOpacity>
 
-            {mode === 'signup' && signupStep === 'password' && (
-              <>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="New Password"
-                    placeholderTextColor="#94a3b8"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                  />
-                </View>
-                <TouchableOpacity style={styles.button} onPress={handleSetPassword} disabled={loading}>
-                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Set Password & Finish</Text>}
-                </TouchableOpacity>
-              </>
-            )}
+                  {/* Divider */}
+                  <View style={styles.dividerContainer}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.dividerText}>OR</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
 
-            {/* TOGGLE MODE */}
-            {signupStep === 'email' && (
-              <TouchableOpacity onPress={resetState} style={styles.toggleContainer} disabled={loading}>
-                <Text style={styles.toggleText}>
-                  {mode === 'login' ? "Don't have an account? Sign up" : "Already have an account? Log in"}
-                </Text>
-              </TouchableOpacity>
-            )}
+                  {/* Google Button */}
+                  <TouchableOpacity style={styles.googleButton} activeOpacity={0.7}>
+                    <Ionicons name="logo-google" size={20} color="#db4437" style={styles.googleIcon} />
+                    <Text style={styles.googleButtonText}>Continue with Google</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  {/* OTP Input */}
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.inputLabel}>6-Digit Code</Text>
+                    <View style={styles.inputContainer}>
+                      <Ionicons name="keypad-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Enter code"
+                        placeholderTextColor="#94a3b8"
+                        value={otp}
+                        onChangeText={setOtp}
+                        keyboardType="number-pad"
+                        maxLength={6}
+                      />
+                    </View>
+                  </View>
+
+                  {/* Verify Button */}
+                  <TouchableOpacity onPress={handleVerifyOtp} disabled={loading} activeOpacity={0.8}>
+                    <View style={[styles.button, { backgroundColor: '#2563eb' }]}>
+                      {loading ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : (
+                        <>
+                          <Text style={styles.buttonText}>Verify Code</Text>
+                          <Ionicons name="arrow-forward" size={20} color="#fff" style={styles.buttonIcon} />
+                        </>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => setMode('login')} style={{ marginTop: 20, alignItems: 'center' }}>
+                    <Text style={{ color: '#64748b', fontWeight: '500' }}>Back to Login</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {/* Bottom Terms */}
+              <View style={styles.termsContainer}>
+                <Ionicons name="lock-closed-outline" size={14} color="#64748b" style={{ marginRight: 6 }} />
+                <Text style={styles.termsText}>By continuing, you agree to our</Text>
+              </View>
+              <View style={styles.termsLinksRow}>
+                <Text style={styles.termsLink}>Terms of Service</Text>
+                <Text style={styles.termsText}> and </Text>
+                <Text style={styles.termsLink}>Privacy Policy</Text>
+              </View>
+            </View>
           </View>
-
         </View>
       </ImageBackground>
     </KeyboardAvoidingView>
@@ -246,39 +199,67 @@ const styles = StyleSheet.create({
   backgroundImage: { flex: 1, width: '100%', height: '100%' },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)', // Lighter overlay since image is bright
     justifyContent: 'space-between',
-    paddingTop: 80,
   },
-  headerContainer: { paddingHorizontal: 30, marginTop: 60 },
+  headerContainer: { paddingHorizontal: 24, marginTop: 60 },
+  logoRow: { flexDirection: 'row', alignItems: 'center' },
+  logoIconPlaceholder: {
+    width: 36, height: 36, backgroundColor: '#2563eb', borderRadius: 18,
+    justifyContent: 'center', alignItems: 'center', marginRight: 10,
+    borderBottomRightRadius: 0, // Teardrop shape approximation
+  },
   logoText: {
-    fontSize: 48, fontWeight: '900', color: '#ffffff', letterSpacing: -1,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4,
-  },
-  tagline: {
-    fontSize: 18, color: '#e2e8f0', marginTop: 8, fontWeight: '500',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3,
+    fontSize: 28, fontWeight: '700', color: '#0f172a',
   },
   card: {
-    backgroundColor: '#ffffff', borderTopLeftRadius: 30, borderTopRightRadius: 30,
-    paddingHorizontal: 30, paddingTop: 40, paddingBottom: Platform.OS === 'ios' ? 40 : 30,
-    shadowColor: '#000', shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 20,
+    backgroundColor: '#ffffff', borderTopLeftRadius: 40, borderTopRightRadius: 40,
+    marginTop: 'auto',
   },
-  cardTitle: { fontSize: 28, fontWeight: '800', color: '#0f172a', marginBottom: 8 },
-  cardSubtitle: { fontSize: 15, color: '#64748b', marginBottom: 30, fontWeight: '500' },
-  inputContainer: { marginBottom: 16 },
+  floatingLogoContainer: {
+    alignItems: 'center',
+    marginTop: -32,
+  },
+  floatingLogo: {
+    width: 64, height: 64, backgroundColor: '#ffffff', borderRadius: 32,
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5,
+  },
+  cardContent: {
+    paddingHorizontal: 24, paddingTop: 20, paddingBottom: Platform.OS === 'ios' ? 40 : 30,
+  },
+  cardTitle: { fontSize: 28, fontWeight: '800', color: '#0f172a', textAlign: 'center', marginBottom: 8 },
+  cardSubtitle: { fontSize: 15, color: '#64748b', textAlign: 'center', marginBottom: 32, fontWeight: '500' },
+  inputWrapper: { marginBottom: 24 },
+  inputLabel: { fontSize: 13, fontWeight: '700', color: '#0f172a', marginBottom: 8 },
+  inputContainer: {
+    flexDirection: 'row', alignItems: 'center',
+    width: '100%', height: 56, backgroundColor: '#ffffff', borderWidth: 1,
+    borderColor: '#e2e8f0', borderRadius: 16, paddingHorizontal: 16,
+  },
+  inputIcon: { marginRight: 12 },
   input: {
-    width: '100%', height: 56, backgroundColor: '#f8fafc', borderWidth: 1.5,
-    borderColor: '#e2e8f0', borderRadius: 16, paddingHorizontal: 20, fontSize: 16,
-    color: '#0f172a', fontWeight: '500',
+    flex: 1, height: '100%', fontSize: 15, color: '#0f172a', fontWeight: '500',
   },
   button: {
-    width: '100%', height: 56, backgroundColor: '#2563eb', borderRadius: 16,
+    width: '100%', height: 56, borderRadius: 16,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#2563eb', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8,
-    marginTop: 8, marginBottom: 20,
+    marginBottom: 24,
   },
-  buttonText: { color: '#ffffff', fontSize: 17, fontWeight: 'bold', letterSpacing: 0.5 },
-  toggleContainer: { paddingVertical: 10, alignItems: 'center' },
-  toggleText: { color: '#3b82f6', fontSize: 15, fontWeight: '600' },
+  buttonText: { color: '#ffffff', fontSize: 17, fontWeight: '700' },
+  buttonIcon: { position: 'absolute', right: 24 },
+  dividerContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: '#f1f5f9' },
+  dividerText: { marginHorizontal: 16, color: '#94a3b8', fontSize: 13, fontWeight: '600' },
+  googleButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    width: '100%', height: 56, backgroundColor: '#ffffff', borderWidth: 1,
+    borderColor: '#e2e8f0', borderRadius: 16, marginBottom: 32,
+  },
+  googleIcon: { marginRight: 12 },
+  googleButtonText: { color: '#0f172a', fontSize: 16, fontWeight: '700' },
+  termsContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  termsText: { color: '#64748b', fontSize: 13, fontWeight: '500' },
+  termsLinksRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  termsLink: { color: '#2563eb', fontSize: 13, fontWeight: '600' },
 });
