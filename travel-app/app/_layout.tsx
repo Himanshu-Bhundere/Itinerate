@@ -78,7 +78,11 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
+        <Stack.Screen name="plans/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="publish_success" options={{ headerShown: false }} />
+        <Stack.Screen name="search_results" options={{ headerShown: false }} />
+        <Stack.Screen name="profile_detail" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

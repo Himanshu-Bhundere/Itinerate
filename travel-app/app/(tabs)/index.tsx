@@ -272,13 +272,82 @@ export default function DiscoverScreen() {
         contentContainerStyle={{ paddingBottom: 100 }}
       >
         <View style={{ paddingHorizontal: 20 }}>
-          <AIBanner />
+          <View style={styles.aiBannerContainer}>
+            <View style={styles.aiBadge}>
+              <Ionicons name="sparkles" size={12} color="#0f172a" style={{marginRight: 4}} />
+              <Text style={styles.aiBadgeText}>AI TRAVEL ASSISTANT</Text>
+            </View>
+            
+            <View style={styles.aiContentRow}>
+              <View style={styles.aiTextContent}>
+                <Text style={styles.aiGreeting}>Hi Explorer! 👋</Text>
+                <Text style={styles.aiTitle}>Where do you want to go next?</Text>
+                <Text style={styles.aiSubtitle}>Get personalized recommendations, smart itineraries and hidden gems just for you.</Text>
+              </View>
+              <Image source={{ uri: ROBOT_IMG }} style={styles.aiRobotImage} />
+            </View>
+
+            <View style={styles.aiActionRow}>
+              <TouchableOpacity style={styles.aiBtnPrimary}>
+                <Ionicons name="briefcase-outline" size={16} color="#fff" style={{marginRight: 6}} />
+                <Text style={styles.aiBtnPrimaryText}>Continue Planning</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.aiBtnSecondary} onPress={() => router.push('/(tabs)/create')}>
+                <Ionicons name="add-circle" size={16} color="#2563eb" style={{marginRight: 6}} />
+                <Text style={styles.aiBtnSecondaryText}>Create Trip</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.aiBtnSecondary}>
+                <Ionicons name="logo-instagram" size={16} color="#e1306c" style={{marginRight: 6}} />
+                <Text style={styles.aiBtnSecondaryText}>Import Reel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
 
         {renderSectionHeader('Continue Planning')}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
-          {plans.slice(0,3).map((item, idx) => <ContinuePlanningCard key={idx} item={item} />)}
-          {plans.length === 0 && <ContinuePlanningCard item={{title: '(Plan Title Skeleton)', id: 'new'}} />}
+          {plans.slice(0,3).map((item, idx) => (
+            <TouchableOpacity key={idx} style={styles.cpCard} onPress={() => router.push(`/plans/${item.id}`)}>
+              <ImageBackground source={{ uri: item.image_url || DEFAULT_IMAGE }} style={styles.cpImage} imageStyle={{ borderRadius: 16 }}>
+                <View style={styles.cpOverlay} />
+                <View style={styles.cpTopRow}>
+                  <View style={styles.cpDaysBadge}>
+                    <Text style={styles.cpDaysText}>3/8 days</Text>
+                  </View>
+                </View>
+                <View style={styles.cpBottom}>
+                  <Text style={styles.cpTitle} numberOfLines={1}>{item.title}</Text>
+                  <Text style={styles.cpSubtitle}>3 of 8 days planned</Text>
+                  <View style={styles.progressBarBg}>
+                    <View style={[styles.progressBarFill, { width: '38%' }]} />
+                  </View>
+                  <Text style={styles.progressText}>38%</Text>
+                </View>
+              </ImageBackground>
+            </TouchableOpacity>
+          ))}
+          {plans.length === 0 && (
+            <TouchableOpacity style={styles.cpCard}>
+              <ImageBackground source={{ uri: DEFAULT_IMAGE }} style={styles.cpImage} imageStyle={{ borderRadius: 16 }}>
+                <View style={styles.cpOverlay} />
+                <View style={styles.cpTopRow}>
+                  <View style={styles.cpDaysBadge}>
+                    <Text style={styles.cpDaysText}>0/0 days</Text>
+                  </View>
+                </View>
+                <View style={styles.cpBottom}>
+                  <Text style={styles.cpTitle} numberOfLines={1}>(No plans yet)</Text>
+                  <Text style={styles.cpSubtitle}>0 days planned</Text>
+                  <View style={styles.progressBarBg}>
+                    <View style={[styles.progressBarFill, { width: '0%' }]} />
+                  </View>
+                  <Text style={styles.progressText}>0%</Text>
+                </View>
+              </ImageBackground>
+            </TouchableOpacity>
+          )}
         </ScrollView>
 
         {renderSectionHeader('What are you in the mood for?', false)}
@@ -294,22 +363,9 @@ export default function DiscoverScreen() {
         {renderSectionHeader('Trending Itineraries')}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
           {plans.map((item, idx) => <TrendingCard key={idx} item={item} />)}
-          {plans.length === 0 && <TrendingCard item={{title: '(Plan Title Skeleton)'}} />}
+          {plans.length === 0 && <TrendingCard item={{title: '(No Trending Itineraries)'}} />}
         </ScrollView>
 
-        {renderSectionHeader('Popular Treks')}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
-          <PopularTrekCard title="Roopkund Trek" tag="Easy" color="#10b981" />
-          <PopularTrekCard title="Hampta Pass" tag="Moderate" color="#f59e0b" />
-          <PopularTrekCard title="Brahmatal Trek" tag="Easy" color="#10b981" />
-        </ScrollView>
-
-        {renderSectionHeader('Featured Organizers')}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
-          <OrganizerCard name="ThrillQuest Adventures" trips="120+" />
-          <OrganizerCard name="The Trail Seekers" trips="85+" />
-          <OrganizerCard name="Himalayan Nomads" trips="150+" />
-        </ScrollView>
 
       </ScrollView>
     </View>
