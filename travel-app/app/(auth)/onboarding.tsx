@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   topSection: { height: 320, width: '100%' },
   heroImage: { flex: 1, width: '100%', height: '100%' },
   heroImageStyle: { opacity: 0.9 },
-  heroGradient: { ...StyleSheet.absoluteFillObject },
+  heroGradient: { ...StyleSheet.absoluteFill as any },
   
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

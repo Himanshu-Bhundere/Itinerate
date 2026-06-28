@@ -169,7 +169,7 @@ export default function SavedScreen() {
         {/* My Collections */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>My Collections</Text>
-          <TouchableOpacity><Text style={styles.viewAllText}>View all ></Text></TouchableOpacity>
+          <TouchableOpacity><Text style={styles.viewAllText}>View all {'>'}</Text></TouchableOpacity>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
           {collections.map((col, idx) => <CollectionCard key={idx} item={col} />)}
@@ -191,7 +191,7 @@ export default function SavedScreen() {
         {/* Recently Saved */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recently Saved</Text>
-          <TouchableOpacity><Text style={styles.viewAllText}>View all ></Text></TouchableOpacity>
+          <TouchableOpacity><Text style={styles.viewAllText}>View all {'>'}</Text></TouchableOpacity>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
           <RecentSaveItem title="Kedarkantha Trek" col="Maharashtra Treks" time="2h ago" />
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
 
   collectionCard: { width: 140, height: 160, marginRight: 16 },
   collectionImg: { width: '100%', height: '100%', justifyContent: 'space-between', padding: 12 },
-  collectionOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 16 },
+  collectionOverlay: { ...StyleSheet.absoluteFill as any, backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 16 },
   collectionTop: { alignItems: 'flex-end' },
   collectionBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   collectionTitle: { color: '#fff', fontSize: 14, fontWeight: '700', marginBottom: 2 },
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   plansGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, justifyContent: 'space-between' },
   planCard: { width: CARD_WIDTH, backgroundColor: '#fff', borderRadius: 16, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   planImg: { width: '100%', height: 120, justifyContent: 'space-between' },
-  planOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.2)', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
+  planOverlay: { ...StyleSheet.absoluteFill as any, backgroundColor: 'rgba(0,0,0,0.2)', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
   planTopRow: { flexDirection: 'row', justifyContent: 'space-between', padding: 8 },
   planTag: { backgroundColor: '#10b981', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
   planTagText: { color: '#fff', fontSize: 9, fontWeight: '800' },

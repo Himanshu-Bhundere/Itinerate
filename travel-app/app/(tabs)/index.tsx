@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
 
   cpCard: { width: 160, height: 180, marginRight: 16 },
   cpImage: { width: '100%', height: '100%', justifyContent: 'space-between', padding: 12 },
-  cpOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 16 },
+  cpOverlay: { ...StyleSheet.absoluteFill as any, backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 16 },
   cpTopRow: { flexDirection: 'row', justifyContent: 'space-between' },
   cpDaysBadge: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   cpDaysText: { color: '#fff', fontSize: 10, fontWeight: '600' },
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
 
   activityCard: { width: 220, height: 120, marginRight: 16 },
   activityImage: { width: '100%', height: '100%', padding: 16, justifyContent: 'flex-end' },
-  activityOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12 },
+  activityOverlay: { ...StyleSheet.absoluteFill as any, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12 },
   activityIconBox: { position: 'absolute', top: 16, left: 16, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
   activityContent: {},
   activityTitle: { color: '#fff', fontSize: 15, fontWeight: '700', marginBottom: 2 },
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
 
   trendingCard: { width: 260, height: 260, marginRight: 16 },
   trendingImage: { width: '100%', height: '100%', justifyContent: 'space-between', padding: 16 },
-  trendingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 16 },
+  trendingOverlay: { ...StyleSheet.absoluteFill as any, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 16 },
   trendingTop: { flexDirection: 'row', justifyContent: 'space-between' },
   trendingDaysBadge: { backgroundColor: 'rgba(0,0,0,0.4)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   trendingDaysText: { color: '#fff', fontSize: 11, fontWeight: '600' },
