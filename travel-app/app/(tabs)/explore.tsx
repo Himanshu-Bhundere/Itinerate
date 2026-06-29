@@ -32,6 +32,7 @@ export default function ExploreScreen() {
     const { data } = await supabase
       .from('plans')
       .select('*')
+      .eq('visibility', 'public')
       .limit(5);
     if (data) setPlans(data);
   }
@@ -310,7 +311,7 @@ export default function ExploreScreen() {
 
 const st = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
-  map: { ...StyleSheet.absoluteFillObject },
+  map: { ...StyleSheet.absoluteFill as any },
 
   topOverlay: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
   locationRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20 },
@@ -346,7 +347,7 @@ const st = StyleSheet.create({
 
   planCard: { width: 200, height: 260, marginRight: 16 },
   planImage: { width: '100%', height: '100%', padding: 12, justifyContent: 'space-between' },
-  planOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 16 },
+  planOverlay: { ...StyleSheet.absoluteFill as any, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 16 },
   planTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   planBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   planBadgeText: { color: '#fff', fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },

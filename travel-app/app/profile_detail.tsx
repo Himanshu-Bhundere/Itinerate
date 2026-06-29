@@ -325,7 +325,7 @@ const s = StyleSheet.create({
 
   planCard: { width: 240, marginRight: 16, backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#f1f5f9', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   planImageContainer: { width: '100%', height: 140, borderRadius: 16, padding: 12, justifyContent: 'space-between', flexDirection: 'row' },
-  planImage: { ...StyleSheet.absoluteFillObject, borderRadius: 16 },
+  planImage: { ...StyleSheet.absoluteFill as any, borderRadius: 16 },
   planBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   planBadgeText: { fontSize: 10, fontWeight: '700', color: '#ffffff', letterSpacing: 0.5 },
   bookmarkBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' },
@@ -342,7 +342,7 @@ const s = StyleSheet.create({
   aboutItemTitle: { fontSize: 13, color: '#0f172a', fontWeight: '600', marginBottom: 2 },
   aboutItemSub: { fontSize: 12, color: '#64748b' },
   mapThumbnail: { width: 120, height: 160, borderRadius: 16, backgroundColor: '#e0f2fe', overflow: 'hidden' },
-  mapOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(224, 242, 254, 0.5)' },
+  mapOverlay: { ...StyleSheet.absoluteFill as any, backgroundColor: 'rgba(224, 242, 254, 0.5)' },
   mapLabel: { position: 'absolute', bottom: 8, left: 8, right: 8, backgroundColor: '#ffffff', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   mapLabelText: { fontSize: 10, fontWeight: '600', color: '#0f172a' },
 });

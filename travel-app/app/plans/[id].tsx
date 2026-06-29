@@ -229,7 +229,7 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
 
   heroImage: { width: width, height: height * 0.55, justifyContent: 'flex-end' },
-  heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)' },
+  heroOverlay: { ...StyleSheet.absoluteFill as any, backgroundColor: 'rgba(0,0,0,0.3)' },
 
   topActions: { position: 'absolute', left: 20, right: 20, flexDirection: 'row', justifyContent: 'space-between', zIndex: 10 },
   iconCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' },

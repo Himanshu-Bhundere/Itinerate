@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   card: { flexDirection: 'row', borderRadius: 20, marginBottom: 16, padding: 12, alignItems: 'center', borderWidth: 2, borderColor: 'transparent' },
   cardImgContainer: { width: 100, height: 100, borderRadius: 16, overflow: 'hidden', marginRight: 16 },
   cardImg: { width: '100%', height: '100%' },
-  cardImgOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center' },
+  cardImgOverlay: { ...StyleSheet.absoluteFill as any, justifyContent: 'center', alignItems: 'center' },
   badgeCloud: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 4 },
   
   cardContent: { flex: 1 },

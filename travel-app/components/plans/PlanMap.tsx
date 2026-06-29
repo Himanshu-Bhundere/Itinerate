@@ -32,7 +32,7 @@ export default function PlanMap({ places }: { places: any[] }) {
     return (
       <MapView
         provider={PROVIDER_GOOGLE}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill as any}
         initialRegion={{
           latitude: 20.5937, // Default center on India
           longitude: 78.9629,
@@ -47,7 +47,7 @@ export default function PlanMap({ places }: { places: any[] }) {
     <MapView
       ref={mapRef}
       provider={PROVIDER_GOOGLE}
-      style={StyleSheet.absoluteFillObject}
+      style={StyleSheet.absoluteFill as any}
     >
       {validPlaces.map((place, index) => (
         <Marker

@@ -12,7 +12,7 @@ export default function PlanMap({ places }: { places: any[] }) {
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill as any,
     backgroundColor: '#f1f5f9',
     justifyContent: 'center',
     alignItems: 'center',
