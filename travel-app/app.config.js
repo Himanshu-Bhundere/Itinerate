@@ -39,6 +39,13 @@ export default {
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Itinerate to access your photos to set your profile picture.",
+          "cameraPermission": "Allow Itinerate to take photos to set your profile picture."
+        }
       ]
     ],
     "experiments": {
