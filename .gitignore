@@ -145,3 +145,6 @@ vite.config.ts.timestamp-*
 # Supabase
 supabase/
 
+# Custom ignores
+graphify-out/
+do_task.py
